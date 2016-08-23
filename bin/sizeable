@@ -1,0 +1,123 @@
+#!/usr/bin/env node
+
+var path = require('path');
+var async = require('async');
+var program = require('commander');
+var sizeable = require('../');
+
+program = program
+    .version('0.1.0')
+    .command('sizeable')
+    .description('Get the size of a folder by iterating through its subfiles and folders.')
+    .option('-f, --folder <folder>', 'Folder path')
+    .option('-i, --ignore [ignore]', 'Ignore folders. (RegExp)', toRegExpOption)
+    .option('-d, --details', 'Print JSON details', toBoolOption, 0)
+    .option('-h, --human-readable', 'Print human readable details', toBoolOption, 0)
+    .option('-F, --format <format>', /^(kb|mb|gb|tb)$/i, 'mb')
+    .parse(process.argv);
+
+if (!program.folder) {
+    console.error('Missing folder option');
+    process.exit(1);
+}
+
+sizeable(path.resolve(program.folder), program.ignore, function(err, size, details) {
+    if (err) {
+        throw err;
+    }
+
+    if (program.details) {
+        return printDetails(details, program.format, program.humanReadable);
+    }
+    console.log(sizeable.toFormat(size, program.format), program.format);
+});
+
+function toRegExpOption(v) {
+    return new RegExp(v);
+}
+
+function toBoolOption(v) {
+    return 1;
+}
+
+function printDetails(details, format, humanReadable) {
+    sizeable.detailsSizeTo(details, program.format, function(err, details) {
+        if (err) {
+            throw err;
+        }
+
+        if (humanReadable) {
+            return printDetailsHumanReadable(details, program.format);
+        }
+        console.log(JSON.stringify(details, null, 2));
+    });
+}
+
+function printDetailsHumanReadable(details, format, spaces, callback) {
+    var prefix = '';
+
+    spaces = spaces || 0;
+    if (spaces > 0) {
+        prefix += repeat(' ', spaces - 2) + '|' + repeat('-', 2) + '>';
+    }
+
+    console.log(prefix, path.basename(details.file || details.folder), '::', details.size, format);
+
+    if (details.subfolders) {
+        spaces += 2;
+
+        async.forEachSeries(
+            details.subfolders,
+            function iterate(detail, next) {
+                printDetailsHumanReadable(detail, format, spaces, next);
+            },
+            callback
+        );
+    } else if (callback) {
+        callback(null, details);
+    }
+}
+
+// String.prototype.repeat - https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/String/repeat
+function repeat(str, count) {
+    if (this == null) {
+        throw new TypeError('Can\'t convert ' + this + ' to object');
+    }
+
+    count = +count;
+    if (count != count) {
+        count = 0;
+    }
+    if (count < 0) {
+        throw new RangeError('Repeat count must be non-negative');
+    }
+    if (count == Infinity) {
+        throw new RangeError('Repeat count must be less than infinity');
+    }
+    count = Math.floor(count);
+    if (str.length == 0 || count == 0) {
+        return '';
+    }
+    // Ensuring count is a 31-bit integer allows us to heavily optimize the
+    // main part. But anyway, most current (August 2014) browsers can't handle
+    // strings 1 << 28 chars or longer, so:
+    if (str.length * count >= 1 << 28) {
+        throw new RangeError('Repeat count must not overflow maximum string size');
+    }
+
+    var rpt = '';
+
+    for (;;) {
+        if ((count & 1) == 1) {
+            rpt += str;
+        }
+        count >>>= 1;
+        if (count == 0) {
+            break;
+        }
+        str += str;
+    }
+    // Could we try:
+    // return Array(count + 1).join(this);
+    return rpt;
+  }

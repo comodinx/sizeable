@@ -1,0 +1,27 @@
+{
+  "name": "sizeable",
+  "version": "0.1.0",
+  "description": "Get the size of a folder by iterating through its subfiles and folders.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/comodinx/sizeable"
+  },
+  "author": "Nicolas Molina <comodinx@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/comodinx/sizeable/issues"
+  },
+  "homepage": "https://github.com/comodinx/sizeable",
+  "bin": {
+    "sizeable": "bin/sizeable"
+  },
+  "dependencies": {
+    "async": "1.4.2",
+    "commander": "2.9.0"
+  },
+  "keywords": [
+    "folder",
+    "size"
+  ]
+}
