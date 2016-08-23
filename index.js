@@ -13,7 +13,7 @@ function Sizeable(item, options, callback) {
         options = null;
     }
 
-    if (!toString.call(options) === '[object RegExp]') {
+    if (toString.call(options) === '[object RegExp]') {
         options = {
             ignore: options,
             onlyFolders: onlyFolders
