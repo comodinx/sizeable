@@ -5,6 +5,7 @@ var async = require('async');
 var program = require('commander');
 var sizeable = require('../');
 var pjson = require('../package.json');
+var options = {};
 
 program = program
     .version(pjson.version)
@@ -12,6 +13,7 @@ program = program
     .description('Get the size of a folder by iterating through its subfiles and folders.')
     .option('-f, --folder <folder>', 'Folder path')
     .option('-i, --ignore [ignore]', 'Ignore folders. (RegExp)', toRegExpOption)
+    .option('-o, --only-folders', 'Ignore all files', toBoolOption, 0)
     .option('-d, --details', 'Print JSON details', toBoolOption, 0)
     .option('-H, --human-readable', 'Print human readable details', toBoolOption, 0)
     .option('-F, --format <format>', /^(kb|mb|gb|tb)$/i, 'mb')
@@ -22,7 +24,10 @@ if (!program.folder) {
     process.exit(1);
 }
 
-sizeable(path.resolve(program.folder), program.ignore, function(err, size, details) {
+options.ignore = program.ignore;
+options.onlyFolders = program.onlyFolders;
+
+sizeable(path.resolve(program.folder), options, function(err, size, details) {
     if (err) {
         throw err;
     }

@@ -4,13 +4,25 @@ var fs = require('fs');
 var path = require('path');
 var async = require('async');
 
-function Sizeable(item, ignoreRegExp, callback) {
+var toString = Object.prototype.toString;
+var onlyFolders = false;
+
+function Sizeable(item, options, callback) {
     if (!callback) {
-        callback = ignoreRegExp;
-        ignoreRegExp = null;
+        callback = options;
+        options = null;
     }
 
-    if (ignoreRegExp && ignoreRegExp.test(item)) {
+    if (!toString.call(options) === '[object RegExp]') {
+        options = {
+            ignore: options,
+            onlyFolders: onlyFolders
+        };
+    }
+
+    options = options || {};
+
+    if (options.ignore && options.ignore.test(item)) {
         return callback(null, 0);
     }
 
@@ -19,7 +31,11 @@ function Sizeable(item, ignoreRegExp, callback) {
             size: !e ? (stats.size || 0) : 0
         };
 
-        if (!e && stats.isDirectory()) {
+        if (e) {
+            return callback(e);
+        }
+
+        if (stats.isDirectory()) {
             result.folder = item;
             result.subfolders = [];
 
@@ -33,10 +49,12 @@ function Sizeable(item, ignoreRegExp, callback) {
                     function iterate(dirItem, next) {
                         Sizeable(
                             path.join(item, dirItem),
-                            ignoreRegExp,
+                            options,
                             function readSize(error, size, details) {
-                                if (!error && details) {
+                                if (!error) {
                                     result.size += size;
+                                }
+                                if (details) {
                                     result.subfolders.push(details);
                                 }
                                 next(error);
@@ -49,6 +67,9 @@ function Sizeable(item, ignoreRegExp, callback) {
                 );
             });
         } else {
+            if (options.onlyFolders) {
+                return callback(e, result.size);
+            }
             result.file = item;
             callback(e, result.size, result);
         }

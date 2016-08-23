@@ -26,7 +26,7 @@ Usage
 ```js
 var sizeable = require('sizeable');
 
-sizeable(myFolderPath, [ignoreRegexPattern], callback);
+sizeable(myFolderPath, [options or ignore regex pattern], callback);
 ```
 
 Example:
@@ -95,6 +95,16 @@ sizeable(folder, ignore, function callback(err, size, details) {
     });
 });
 ```
+
+
+Options
+-------
+
+##### ignore
+Regular expresion for ignore folders or files
+
+##### onlyFolders
+Ignore all files
 
 
 CLI tool
