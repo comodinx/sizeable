@@ -70,6 +70,32 @@ sizeable(folder, ignore, function callback(err, size, details) {
 });
 ```
 
+```js
+var sizeable = require('sizeable');
+var folder = '/my/folder/path';
+var ignore = /node_modules/;
+
+sizeable(folder, ignore, function callback(err, size, details) {
+    if (err) {
+        throw err;
+    }
+
+    sizeable.detailsSizeTo(details, 'mb', function(err, details) {
+        if (err) {
+            throw err;
+        }
+
+        sizeable.sortDetailsBySize(details, function(err, details) {
+            if (err) {
+                throw err;
+            }
+
+            console.log(JSON.stringify(details, null, 2));
+        });
+    });
+});
+```
+
 
 CLI tool
 --------

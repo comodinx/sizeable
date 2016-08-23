@@ -4,15 +4,16 @@ var path = require('path');
 var async = require('async');
 var program = require('commander');
 var sizeable = require('../');
+var pjson = require('../package.json');
 
 program = program
-    .version('0.1.0')
+    .version(pjson.version)
     .command('sizeable')
     .description('Get the size of a folder by iterating through its subfiles and folders.')
     .option('-f, --folder <folder>', 'Folder path')
     .option('-i, --ignore [ignore]', 'Ignore folders. (RegExp)', toRegExpOption)
     .option('-d, --details', 'Print JSON details', toBoolOption, 0)
-    .option('-h, --human-readable', 'Print human readable details', toBoolOption, 0)
+    .option('-H, --human-readable', 'Print human readable details', toBoolOption, 0)
     .option('-F, --format <format>', /^(kb|mb|gb|tb)$/i, 'mb')
     .parse(process.argv);
 
@@ -46,10 +47,16 @@ function printDetails(details, format, humanReadable) {
             throw err;
         }
 
-        if (humanReadable) {
-            return printDetailsHumanReadable(details, program.format);
-        }
-        console.log(JSON.stringify(details, null, 2));
+        sizeable.sortDetailsBySize(details, function(err, details) {
+            if (err) {
+                throw err;
+            }
+
+            if (humanReadable) {
+                return printDetailsHumanReadable(details, program.format);
+            }
+            console.log(JSON.stringify(details, null, 2));
+        });
     });
 }
 

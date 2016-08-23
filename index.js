@@ -105,4 +105,24 @@ Sizeable.detailsSizeTo = function detailsSizeTo(details, format, callback) {
     }
 }
 
+Sizeable.sortDetailsBySize = function sortDetailsBySize(details, callback) {
+    if (details.subfolders) {
+        async.sortBy(
+            details.subfolders,
+            function iterate(detail, next) {
+                Sizeable.sortDetailsBySize(detail, function(err, details) {
+                    next(null, details.size);
+                });
+            },
+            function done(err, result) {
+                details.subfolders = result;
+
+                callback(err, details);
+            }
+        );
+    } else {
+        callback(null, details);
+    }
+}
+
 module.exports = Sizeable;
