@@ -11,7 +11,7 @@ program = program
     .version(pjson.version)
     .command('sizeable')
     .description('Get the size of a folder by iterating through its subfiles and folders.')
-    .option('-f, --folder <folder>', 'Folder path')
+    .option('-f, --folder <folder>', 'Folder path. Default is "."', '.')
     .option('-i, --ignore [ignore]', 'Ignore folders. (RegExp)', toRegExpOption)
     .option('-o, --only-folders', 'Ignore all files', toBoolOption, 0)
     .option('-d, --details', 'Print JSON details', toBoolOption, 0)
